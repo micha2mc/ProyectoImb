@@ -35,48 +35,55 @@ public class Application {
 		PreparedStatement ps = null;
 		List<Proveedor> proveedores = new ArrayList<>();
 		Proveedor proveedor;
+		if (!(args.length<=0)) {
 
-		try {
-			Class.forName("com.mysql.cj.jdbc.Driver");
-			myConnection = DriverManager.getConnection(URL, USERNAME, PSW);
-			ps = myConnection.prepareStatement(
-					"SELECT * FROM springbatchdemo.proveedores WHERE id_cliente=?");
-			ps.setString(1, args[0]);
-			rs = ps.executeQuery();
-
-			if (rs.next()) {
-				do {
-					proveedor = new Proveedor();
-					proveedor.setIdProveedor(rs.getInt("id_proveedor"));
-					proveedor.setNombre(rs.getString("nombre"));
-					proveedor.setFechaAlta(rs.getString("fecha_alta"));
-					proveedor.setIdCliente(rs.getString("id_cliente"));
-					proveedores.add(proveedor);
-				} while (rs.next());
-				writeFile(proveedores);
-
-			} else {
-				System.out.println("El cliente no tiene proveedores asignados");
-			}
-
-		} catch (ClassNotFoundException | SQLException e) {
-			e.printStackTrace();
-
-		} finally {
 			try {
-				rs.close();
-				ps.close();
-				myConnection.close();
-			} catch (SQLException e) {
+				Class.forName("com.mysql.cj.jdbc.Driver");
+				myConnection = DriverManager.getConnection(URL, USERNAME, PSW);
+				ps = myConnection.prepareStatement(
+						"SELECT * FROM springbatchdemo.proveedores WHERE id_cliente=?");
+
+				ps.setString(1, args[0]);
+				rs = ps.executeQuery();
+
+				if (rs.next()) {
+					do {
+						proveedor = new Proveedor();
+						proveedor.setIdProveedor(rs.getInt("id_proveedor"));
+						proveedor.setNombre(rs.getString("nombre"));
+						proveedor.setFechaAlta(rs.getString("fecha_alta"));
+						proveedor.setIdCliente(rs.getString("id_cliente"));
+						proveedores.add(proveedor);
+					} while (rs.next());
+					writeFile(proveedores);
+
+				} else {
+					System.out.println(
+							"El cliente no tiene proveedores asignados");
+				}
+
+			} catch (ClassNotFoundException | SQLException e) {
 				e.printStackTrace();
+
+			} finally {
+				try {
+					rs.close();
+					ps.close();
+					myConnection.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
+		} else {
+			System.out.println("Necesario la introducción de un indice del"
+					+ " cliente.\nConsulta el archivo README.md");
 		}
 
 	}
-	
+
 	/**
 	 * Método para escribir el archivo plano.
-	 * */
+	 */
 
 	private static void writeFile(List<Proveedor> proveedores) {
 		File ibm = new File(
@@ -88,8 +95,10 @@ public class Application {
 								.format(new Date()))) {
 			proveedores.forEach(pr -> {
 				try {
-					fw.write(pr.getIdProveedor()+Constantes.ESPACIO + pr.getNombre() + Constantes.ESPACIO 
-							+ pr.getFechaAlta() + Constantes.ESPACIO + pr.getIdCliente());
+					fw.write(pr.getIdProveedor() + Constantes.ESPACIO
+							+ pr.getNombre() + Constantes.ESPACIO
+							+ pr.getFechaAlta() + Constantes.ESPACIO
+							+ pr.getIdCliente());
 					fw.write("\n");
 				} catch (IOException e) {
 					e.printStackTrace();
